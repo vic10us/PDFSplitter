@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
+using Path = System.IO.Path;
 
 namespace PDFSplitter
 {
@@ -43,9 +44,9 @@ namespace PDFSplitter
 			Console.WriteLine($"{totalMulti} employee{(totalMulti > 1 ? "s" : "")} had Multiple results");
 			foreach (var fileGroup in multiResults)
 			{
-				var filesToMerge = fileGroup.Select(System.IO.Path.GetFileNameWithoutExtension)
+				var filesToMerge = fileGroup.Select(Path.GetFileNameWithoutExtension)
 				                            .OrderByDescending(f => f.Split('-')[1])
-				                            .Select(f => System.IO.Path.Combine(outputPath,$"{f}.pdf"));
+				                            .Select(f => Path.Combine(outputPath,$"{f}.pdf"));
 				var fileName = $"{fileGroup.Key}-MERGE.pdf";
 				MergePDF(filesToMerge, fileName);
                 File.Move($"{fileGroup.Key}-1.pdf", $"{fileGroup.Key}_1.pdf");
@@ -63,6 +64,16 @@ namespace PDFSplitter
 				var newName = fileRename.Replace("_1", "-1");
                 File.Move(fileRename, newName);
 			}
+            var renameFileResults3 = Directory.GetFiles(outputPath, "*-*.pdf", SearchOption.TopDirectoryOnly);
+		    if (!renameFileResults3.Any()) return;
+
+		    var specialPath = Path.Combine(outputPath, "MergeOriginals");
+		    Directory.CreateDirectory(specialPath);
+		    foreach (var s in renameFileResults3)
+		    {
+		        var newFile = s.Replace(outputPath, specialPath);
+		        File.Move(s, newFile);
+		    }
 		}
 
 		public static string GetOutputFolder()
@@ -71,8 +82,8 @@ namespace PDFSplitter
 
 			var inputFile = new FileInfo(Options.InputFile);
 			var filenameWithPath = inputFile.FullName;
-			var filePath = System.IO.Path.GetDirectoryName(filenameWithPath);
-			var outputPath = System.IO.Path.Combine(filePath ?? "", System.IO.Path.GetFileNameWithoutExtension(filenameWithPath));
+			var filePath = Path.GetDirectoryName(filenameWithPath);
+			var outputPath = Path.Combine(filePath ?? "", Path.GetFileNameWithoutExtension(filenameWithPath));
 			return outputPath;
 		}
 
@@ -91,11 +102,11 @@ namespace PDFSplitter
 				{
 					var employeeNumber = match.Groups[Options.FilePatternGroup].Value;
 					var j = 1;
-					var outputFilename = System.IO.Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
+					var outputFilename = Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
 					while (File.Exists(outputFilename)) 
 					{
 						j++;
-						outputFilename = System.IO.Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
+						outputFilename = Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
 					}
                     if (Options.Verbose) Console.WriteLine($"Found Employee #{employeeNumber}");
 					SavePageToNewFile(reader, i, outputFilename);
