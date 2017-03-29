@@ -9,37 +9,37 @@ using iTextSharp.text.pdf.parser;
 
 namespace PDFSplitter
 {
-	class MainClass
+	public class Program
 	{
-		public static Options options = new Options();
+		public static Options Options = new Options();
 
 		public static void Main(string[] args)
 		{
-			if (!CommandLine.Parser.Default.ParseArguments(args, options))
+			if (!CommandLine.Parser.Default.ParseArguments(args, Options))
 				return;
-
+            
 			// Values are available here
 			Console.WriteLine("PDF Splitter v1.0.0");
-            if (options.Verbose) Console.WriteLine("Filename: {0}", options.InputFile);
-            if (!File.Exists(options.InputFile))
+            if (Options.Verbose) Console.WriteLine("Filename: {0}", Options.InputFile);
+            if (!File.Exists(Options.InputFile))
 			{
-				Console.WriteLine($"Input file not found: '{options.InputFile}'");
+				Console.WriteLine($"Input file not found: '{Options.InputFile}'");
 				return;
 			}
-			var inputFile = new FileInfo(options.InputFile);
+			var inputFile = new FileInfo(Options.InputFile);
 			var filenameWithPath = inputFile.FullName;
 			var outputPath = GetOutputFolder();
-			if (options.Overwrite && Directory.Exists(outputPath))
+			if (Options.Overwrite && Directory.Exists(outputPath))
 			{
 				Directory.Delete(outputPath, true);
 			}
 			Directory.CreateDirectory(outputPath);
-			//var textFileName = "/Users/khill/OneDrive/Documents/RPT4039.002-2.txt";
+
 			ProcessPDF(filenameWithPath, outputPath);
-			var fileResults = System.IO.Directory.GetFiles(outputPath, "*.pdf", SearchOption.TopDirectoryOnly);
+			var fileResults = Directory.GetFiles(outputPath, "*.pdf", SearchOption.TopDirectoryOnly);
 			var fileGroups = fileResults.GroupBy(f => f.Split('-')[0]);
-			var multiResults = fileGroups.Where(g => g.Count() > 1);
-			var totalMulti = multiResults.Count();
+			var multiResults = fileGroups.Where(g => g.Count() > 1).ToList();
+			var totalMulti = multiResults.Count;
 			Console.WriteLine($"{totalMulti} employee{(totalMulti > 1 ? "s" : "")} had Multiple results");
 			foreach (var fileGroup in multiResults)
 			{
@@ -51,46 +51,45 @@ namespace PDFSplitter
                 File.Move($"{fileGroup.Key}-1.pdf", $"{fileGroup.Key}_1.pdf");
                 File.Move(fileName, $"{fileGroup.Key}-1.pdf");
 			}
-			var renameFileResults = System.IO.Directory.GetFiles(outputPath, "*-1.pdf", SearchOption.TopDirectoryOnly);
+			var renameFileResults = Directory.GetFiles(outputPath, "*-1.pdf", SearchOption.TopDirectoryOnly);
 			foreach (var fileRename in renameFileResults)
 			{
 				var newName = fileRename.Replace("-1", "");
                 File.Move(fileRename, newName);
 			}
-			var renameFileResults2 = System.IO.Directory.GetFiles(outputPath, "*_1.pdf", SearchOption.TopDirectoryOnly);
+			var renameFileResults2 = Directory.GetFiles(outputPath, "*_1.pdf", SearchOption.TopDirectoryOnly);
 			foreach (var fileRename in renameFileResults2)
 			{
 				var newName = fileRename.Replace("_1", "-1");
                 File.Move(fileRename, newName);
 			}
-			//File.WriteAllText(textFileName, text);
 		}
 
 		public static string GetOutputFolder()
 		{
-			if (options.OutputSpecified) return options.Output;
+			if (Options.OutputSpecified) return Options.Output;
 
-			var inputFile = new FileInfo(options.InputFile);
+			var inputFile = new FileInfo(Options.InputFile);
 			var filenameWithPath = inputFile.FullName;
 			var filePath = System.IO.Path.GetDirectoryName(filenameWithPath);
-			var outputPath = System.IO.Path.Combine(filePath, System.IO.Path.GetFileNameWithoutExtension(filenameWithPath));
+			var outputPath = System.IO.Path.Combine(filePath ?? "", System.IO.Path.GetFileNameWithoutExtension(filenameWithPath));
 			return outputPath;
 		}
 
 		public static void ProcessPDF(string pdfFile, string outputPath)
 		{
-			PdfReader reader = new PdfReader(pdfFile);
+			var reader = new PdfReader(pdfFile);
 
-			var regex = new Regex(options.SplitPattern);
+			var regex = new Regex(Options.SplitPattern);
 			var pageCount = 0;
-			for (int i = 1; i <= reader.NumberOfPages; i++)
+			for (var i = 1; i <= reader.NumberOfPages; i++)
 			{
 				var pageText = PdfTextExtractor.GetTextFromPage(reader, i, new SimpleTextExtractionStrategy());
 
 				var match = regex.Match(pageText);
 				if (match.Success) 
 				{
-					var employeeNumber = match.Groups[options.FilePatternGroup].Value;
+					var employeeNumber = match.Groups[Options.FilePatternGroup].Value;
 					var j = 1;
 					var outputFilename = System.IO.Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
 					while (File.Exists(outputFilename)) 
@@ -98,7 +97,7 @@ namespace PDFSplitter
 						j++;
 						outputFilename = System.IO.Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
 					}
-                    if (options.Verbose) Console.WriteLine($"Found Employee #{employeeNumber}");
+                    if (Options.Verbose) Console.WriteLine($"Found Employee #{employeeNumber}");
 					SavePageToNewFile(reader, i, outputFilename);
 					pageCount++;
 				}
@@ -110,32 +109,32 @@ namespace PDFSplitter
 		{
             using (var stream = new FileStream(fileName, FileMode.Create))
             {
-                Document document = new Document();
+                var document = new Document();
                 try
                 {
-                    PdfCopy copy = new PdfCopy(document, stream);
+                    var copy = new PdfCopy(document, stream);
                     document.Open();
                     copy.AddPage(copy.GetImportedPage(reader, pageNumber));
                 }
                 finally
                 {
-                    if (document != null) document.Close();
+                    document.Close();
                 }
             }
 		}
 
 		public static bool MergePDF(IEnumerable<string> fileNames, string targetPdf)
 		{
-			bool merged = true;
-			using (FileStream stream = new FileStream(targetPdf, FileMode.Create))
+			var merged = true;
+			using (var stream = new FileStream(targetPdf, FileMode.Create))
 			{
-				Document document = new Document();
-				PdfCopy pdf = new PdfCopy(document, stream);
+				var document = new Document();
+				var pdf = new PdfCopy(document, stream);
 				PdfReader reader = null;
 				try
 				{
 					document.Open();
-					foreach (string file in fileNames)
+					foreach (var file in fileNames)
 					{
 						reader = new PdfReader(file);
 						pdf.AddDocument(reader);
@@ -145,17 +144,11 @@ namespace PDFSplitter
 				catch (Exception)
 				{
 					merged = false;
-					if (reader != null)
-					{
-						reader.Close();
-					}
+				    reader?.Close();
 				}
 				finally
 				{
-					if (document != null)
-					{
-						document.Close();
-					}
+				    document.Close();
 				}
 			}
 			return merged;
