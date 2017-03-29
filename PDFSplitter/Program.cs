@@ -18,11 +18,10 @@ namespace PDFSplitter
 			if (!CommandLine.Parser.Default.ParseArguments(args, options))
 				return;
 
-				// Values are available here
-			if (options.Verbose) Console.WriteLine("Filename: {0}", options.InputFile);
-
+			// Values are available here
 			Console.WriteLine("PDF Splitter v1.0.0");
-			if (!System.IO.File.Exists(options.InputFile))
+            if (options.Verbose) Console.WriteLine("Filename: {0}", options.InputFile);
+            if (!File.Exists(options.InputFile))
 			{
 				Console.WriteLine($"Input file not found: '{options.InputFile}'");
 				return;
@@ -49,20 +48,20 @@ namespace PDFSplitter
 				                            .Select(f => System.IO.Path.Combine(outputPath,$"{f}.pdf"));
 				var fileName = $"{fileGroup.Key}-MERGE.pdf";
 				MergePDF(filesToMerge, fileName);
-				System.IO.File.Move($"{fileGroup.Key}-1.pdf", $"{fileGroup.Key}_1.pdf");
-				System.IO.File.Move(fileName, $"{fileGroup.Key}-1.pdf");
+                File.Move($"{fileGroup.Key}-1.pdf", $"{fileGroup.Key}_1.pdf");
+                File.Move(fileName, $"{fileGroup.Key}-1.pdf");
 			}
 			var renameFileResults = System.IO.Directory.GetFiles(outputPath, "*-1.pdf", SearchOption.TopDirectoryOnly);
 			foreach (var fileRename in renameFileResults)
 			{
 				var newName = fileRename.Replace("-1", "");
-				System.IO.File.Move(fileRename, newName);
+                File.Move(fileRename, newName);
 			}
 			var renameFileResults2 = System.IO.Directory.GetFiles(outputPath, "*_1.pdf", SearchOption.TopDirectoryOnly);
 			foreach (var fileRename in renameFileResults2)
 			{
 				var newName = fileRename.Replace("_1", "-1");
-				System.IO.File.Move(fileRename, newName);
+                File.Move(fileRename, newName);
 			}
 			//File.WriteAllText(textFileName, text);
 		}
@@ -82,9 +81,6 @@ namespace PDFSplitter
 		{
 			PdfReader reader = new PdfReader(pdfFile);
 
-			//StringWriter output = new StringWriter();
-
-			// var regex = new Regex("(Matricule|Employee #) ([0-9]{6,})");
 			var regex = new Regex(options.SplitPattern);
 			var pageCount = 0;
 			for (int i = 1; i <= reader.NumberOfPages; i++)
@@ -102,26 +98,30 @@ namespace PDFSplitter
 						j++;
 						outputFilename = System.IO.Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
 					}
-					Console.WriteLine($"Found Employee #{employeeNumber}");
+                    if (options.Verbose) Console.WriteLine($"Found Employee #{employeeNumber}");
 					SavePageToNewFile(reader, i, outputFilename);
-					//output.WriteLine(pageText);
 					pageCount++;
 				}
 			}
 			Console.WriteLine($"Extracted {pageCount} Pages");
-			//return output.ToString();
 		}
 
 		public static void SavePageToNewFile(PdfReader reader, int pageNumber, string fileName)
 		{
-			Document document = new Document();
-			PdfCopy copy = new PdfCopy(document, new FileStream(fileName, FileMode.Create));
-
-			document.Open();
-
-			copy.AddPage(copy.GetImportedPage(reader, pageNumber));
-
-			document.Close();
+            using (var stream = new FileStream(fileName, FileMode.Create))
+            {
+                Document document = new Document();
+                try
+                {
+                    PdfCopy copy = new PdfCopy(document, stream);
+                    document.Open();
+                    copy.AddPage(copy.GetImportedPage(reader, pageNumber));
+                }
+                finally
+                {
+                    if (document != null) document.Close();
+                }
+            }
 		}
 
 		public static bool MergePDF(IEnumerable<string> fileNames, string targetPdf)
