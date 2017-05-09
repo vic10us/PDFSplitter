@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using CommandLine.Text;
 
-namespace PDFSplitter
+namespace PDFSplitterCLI
 {
 	public class Options
 	{
