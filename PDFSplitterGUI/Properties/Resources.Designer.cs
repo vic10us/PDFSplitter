@@ -61,6 +61,15 @@ namespace PDFSplitterGUI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Completed Successfully.
+        /// </summary>
+        internal static string Completed_Successfully {
+            get {
+                return ResourceManager.GetString("Completed_Successfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The output directory already exists.
         /// Do you want to overwrite it? All existing files will be removed.
         ///
@@ -82,12 +91,39 @@ namespace PDFSplitterGUI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to complete.
+        /// </summary>
+        internal static string FailedToComplete {
+            get {
+                return ResourceManager.GetString("FailedToComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Starting...
         ///.
         /// </summary>
         internal static string Starting {
             get {
                 return ResourceManager.GetString("Starting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Success.
+        /// </summary>
+        internal static string Success {
+            get {
+                return ResourceManager.GetString("Success", resourceCulture);
             }
         }
     }
