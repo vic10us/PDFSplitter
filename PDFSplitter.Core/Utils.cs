@@ -39,13 +39,14 @@ namespace PDFSplitter.Core
             _logger = s => { };
         }
 
-        public async Task ProcessAndSplitAsync(string filenameWithPath, string outputPath)
+        public async Task<bool> ProcessAndSplitAsync(string filenameWithPath, string outputPath)
         {
             var t = await Task<bool>.Factory.StartNew(() =>
             {
                 ProcessAndSplit(filenameWithPath, outputPath);
                 return true;
             });
+            return t;
         }
 
         public void ProcessAndSplit(string filenameWithPath, string outputPath)

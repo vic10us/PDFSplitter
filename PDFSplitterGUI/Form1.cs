@@ -62,10 +62,11 @@ namespace PDFSplitterGUI
             }
             Directory.CreateDirectory(output);
             logs.Text = Resources.Starting;
-            await Task.Run(() =>
-            {
-                util.ProcessAndSplit(input, output);
-            });
+            okButton.Enabled = false;
+            var processResult = await util.ProcessAndSplitAsync(input, output);
+            okButton.Enabled = true;
+            if (processResult) MessageBox.Show(Resources.Completed_Successfully, Resources.Success, MessageBoxButtons.OK);
+            else MessageBox.Show(Resources.FailedToComplete, Resources.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
             //await util.ProcessAndSplitAsync(input, output);
         }
 

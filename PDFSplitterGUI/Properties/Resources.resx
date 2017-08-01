@@ -127,4 +127,16 @@ Path: {0}</value>
   <data name="ConfirmOverwriteTitle" xml:space="preserve">
     <value>Overwrite Output</value>
   </data>
+  <data name="Completed_Successfully" xml:space="preserve">
+    <value>Completed Successfully</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="FailedToComplete" xml:space="preserve">
+    <value>Failed to complete</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
 </root>
