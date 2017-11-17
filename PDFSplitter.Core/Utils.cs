@@ -56,7 +56,7 @@ namespace PDFSplitter.Core
             var fileGroups = fileResults.GroupBy(f => f.Split('-')[0]);
             var multiResults = fileGroups.Where(g => g.Count() > 1).ToList();
             var totalMulti = multiResults.Count;
-            _logger.Invoke(new ProcessMessage { Message = $"{totalMulti} employee{(totalMulti > 1 ? "s" : "")} had Multiple results", Progress = 100});
+            _logger.Invoke(new ProcessMessage { Message = $"{totalMulti} employee{(totalMulti > 1 ? "s" : "")} had Multiple results", Progress = 100 });
             foreach (var fileGroup in multiResults)
             {
                 var filesToMerge = fileGroup.Select(Path.GetFileNameWithoutExtension)
@@ -137,7 +137,7 @@ namespace PDFSplitter.Core
                 }
             }
         }
-        
+
         public bool MergePDF(IEnumerable<string> fileNames, string targetPdf)
         {
             var merged = true;
