@@ -97,13 +97,16 @@ namespace PDFSplitter.Core
 
             var regex = new Regex(Settings.SplitPattern);
             var pageCount = 0;
+            var employeeNumber = string.Empty;
             for (var i = 1; i <= reader.NumberOfPages; i++)
             {
                 var pageText = PdfTextExtractor.GetTextFromPage(reader, i, new SimpleTextExtractionStrategy());
 
                 var match = regex.Match(pageText);
-                if (!match.Success) continue;
-                var employeeNumber = match.Groups[Settings.FilePatternGroup].Value;
+
+                if (!match.Success && string.IsNullOrEmpty(employeeNumber)) continue;
+                if (match.Success) employeeNumber = match.Groups[Settings.FilePatternGroup].Value;
+
                 var j = 1;
                 var outputFilename = Path.Combine(outputPath, $"{employeeNumber}-{j}.pdf");
                 while (File.Exists(outputFilename))
