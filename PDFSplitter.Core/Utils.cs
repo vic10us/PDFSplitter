@@ -101,6 +101,7 @@ namespace PDFSplitter.Core
             for (var i = 1; i <= reader.NumberOfPages; i++)
             {
                 var pageText = PdfTextExtractor.GetTextFromPage(reader, i, new SimpleTextExtractionStrategy());
+                if (string.IsNullOrWhiteSpace(pageText)) continue;
                 var match = regex.Match(pageText);
 
                 if (!match.Success && string.IsNullOrEmpty(employeeNumber)) continue;
