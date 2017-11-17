@@ -14,7 +14,7 @@ namespace PDFSplitter.Core
 {
     public class Settings
     {
-        public string SplitPattern { get; set; } = "(Matricule|Employee #) ([0-9]{6,})";
+        public string SplitPattern { get; set; } = "(Matricule|Employee #|Employee Number:) ([0-9]{5,})";
         public int FilePatternGroup { get; set; } = 2;
     }
 
@@ -60,7 +60,7 @@ namespace PDFSplitter.Core
             foreach (var fileGroup in multiResults)
             {
                 var filesToMerge = fileGroup.Select(Path.GetFileNameWithoutExtension)
-                    .OrderByDescending(f => f.Split('-')[1])
+                    .OrderBy(f => f.Split('-')[1])
                     .Select(f => Path.Combine(outputPath, $"{f}.pdf"));
                 var fileName = $"{fileGroup.Key}-MERGE.pdf";
                 MergePDF(filesToMerge, fileName);
@@ -101,7 +101,6 @@ namespace PDFSplitter.Core
             for (var i = 1; i <= reader.NumberOfPages; i++)
             {
                 var pageText = PdfTextExtractor.GetTextFromPage(reader, i, new SimpleTextExtractionStrategy());
-
                 var match = regex.Match(pageText);
 
                 if (!match.Success && string.IsNullOrEmpty(employeeNumber)) continue;
